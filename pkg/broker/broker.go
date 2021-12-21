@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+    "time"
 
 	"code.cloudfoundry.org/lager"
 	"github.com/pivotal-cf/brokerapi"
@@ -121,20 +122,23 @@ func (bkr *BrokerImpl) Bind(ctx context.Context, instanceID string, bindingID st
 		Credentials: bkr.Config.Credentials,
 		Parameters:  parameters,
 	}
+    time.Sleep(70 * time.Second)
 	return brokerapi.Binding{
 		Credentials: bkr.Config.Credentials,
 	}, nil
 }
 
 func (bkr *BrokerImpl) Unbind(ctx context.Context, instanceID string, bindingID string, details brokerapi.UnbindDetails, asyncAllowed bool) (brokerapi.UnbindSpec, error) {
-	return brokerapi.UnbindSpec{}, nil
+    err := brokerapi.NewFailureResponse(fmt.Errorf("Unknown binding ID %s", bindingID), 410, "get-binding")
+    return brokerapi.UnbindSpec{}, err
 }
+
 
 func (bkr *BrokerImpl) GetBinding(ctx context.Context, instanceID string, bindingID string) (spec brokerapi.GetBindingSpec, err error) {
 	if val, ok := bkr.Bindings[bindingID]; ok {
 		return val, nil
 	}
-	err = brokerapi.NewFailureResponse(fmt.Errorf("Unknown binding ID %s", bindingID), 404, "get-binding")
+	err = brokerapi.NewFailureResponse(fmt.Errorf("Unknown binding ID %s", bindingID), 410, "get-binding")
 	return
 }
 
